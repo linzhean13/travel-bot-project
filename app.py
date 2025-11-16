@@ -6,9 +6,20 @@ import os
 
 app = Flask(__name__)
 
-# 從環境變數或直接貼上
-line_bot_api = LineBotApi(os.environ.get('YOUR_CHANNEL_ACCESS_TOKEN', 'HEDKrlDtYrBcCR6ncE+Ag20VQ2RTcR+cKb3McsPME1IIP+h6dvoOoH6S4KjzPw2YDTFRSNhK++cV0oUCa9r0An FQ/dGOdwF5NI2hJoO0LKjnxYDox7x2XtOQHcfU0z0QdEE4ekpH2qahbwZT1I+jXQdB04t89/1O/w1cDnyilFU='))
-handler = WebhookHandler(os.environ.get('YOUR_CHANNEL_SECRET', '714ea06f4789c37f33a2fa5428507a1d'))
+# --- 關鍵修改 ---
+# 絕對不要將你的金鑰寫死在這裡！
+# 程式碼會從你稍後在 Render 平台上設定的「環境變數」中讀取金鑰
+ACCESS_TOKEN = os.environ.get('YOUR_CHANNEL_ACCESS_TOKEN')
+CHANNEL_SECRET = os.environ.get('YOUR_CHANNEL_SECRET')
+
+# 檢查金鑰是否存在，如果 Render 平台上沒有設定，程式會在這裡印出錯誤日誌
+if ACCESS_TOKEN is None or CHANNEL_SECRET is None:
+    print("嚴重錯誤：環境變數 'YOUR_CHANNEL_ACCESS_TOKEN' 或 'YOUR_CHANNEL_SECRET' 尚未在 Render 上設定。")
+    # 你可以選擇在這裡讓程式 crash，但通常印出日誌就足以讓 Render 部署失敗並顯示錯誤
+    # abort(500, "Server configuration error") 
+    
+line_bot_api = LineBotApi(ACCESS_TOKEN)
+handler = WebhookHandler(CHANNEL_SECRET)
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -19,19 +30,25 @@ def callback():
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
+        app.logger.error("Invalid signature. 請檢查你的 Channel Secret 是否在 Render 上設定正確。")
         abort(400)
+    except Exception as e:
+        app.logger.error(f"處理訊息時發生錯誤: {e}")
+        abort(500)
 
     return 'OK'
 
 # 處理文字訊息 (Echo)
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=event.message.text)) # 回應和用戶輸入一樣的訊息
+    try:
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=event.message.text)) # 回應和用戶輸入一樣的訊息
+    except Exception as e:
+        app.logger.error(f"回覆訊息時發生錯誤: {e}")
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
-
     app.run(host='0.0.0.0', port=port)
-
