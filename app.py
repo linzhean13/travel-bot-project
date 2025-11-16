@@ -14,7 +14,7 @@ handler = WebhookHandler(os.environ.get('YOUR_CHANNEL_SECRET', '714ea06f4789c37f
 def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
-    app.logger.info("Request body: "D + body)
+    app.logger.info("Request body: " + body)
 
     try:
         handler.handle(body, signature)
@@ -32,4 +32,5 @@ def handle_message(event):
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
+
     app.run(host='0.0.0.0', port=port)
