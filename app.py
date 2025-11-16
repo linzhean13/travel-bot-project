@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 # 從環境變數或直接貼上
-line_bot_api = LineBotApi(os.environ.get('YOUR_CHANNEL_ACCESS_TOKEN', '2008506726'))
+line_bot_api = LineBotApi(os.environ.get('YOUR_CHANNEL_ACCESS_TOKEN', 'HEDKrlDtYrBcCR6ncE+Ag20VQ2RTcR+cKb3McsPME1IIP+h6dvoOoH6S4KjzPw2YDTFRSNhK++cV0oUCa9r0An FQ/dGOdwF5NI2hJoO0LKjnxYDox7x2XtOQHcfU0z0QdEE4ekpH2qahbwZT1I+jXQdB04t89/1O/w1cDnyilFU='))
 handler = WebhookHandler(os.environ.get('YOUR_CHANNEL_SECRET', '714ea06f4789c37f33a2fa5428507a1d'))
 
 @app.route("/callback", methods=['POST'])
@@ -34,3 +34,4 @@ if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
 
     app.run(host='0.0.0.0', port=port)
+
